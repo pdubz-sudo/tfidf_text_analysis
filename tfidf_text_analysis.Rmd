@@ -1,0 +1,157 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+###############################################################################
+###############################################################################
+
+
+This assignment is about analyzing words and their frequencies in text documents
+for NLP (natural language processing). The numerical statistic frequency-inverse
+document frequency,tf-idf, is used to determine how important a word
+is in a collection of documents. This decreases weights of words that are 
+often used in a collection and increases the weights of words less often used in
+that collection of documents.
+
+The collection of documents chosen for this script was classic children's books
+written in the 19th century by English authors.
+
+Books and Authors:
+Alice's Adventures in Wonderland by Lewis Carroll
+The Jungle Book by Rudyard Kipling
+A Christmas Carol in Prose; Being a Ghost Story of Christmas by Charles Dickens
+The Princess and the Goblin by George MacDonald
+The King of the Golden River; or, the Black Brothers: A Legend of Stiria. by John Ruskin
+
+
+Let's start
+
+install all the necessary packages and libraries
+```{r}
+library(gutenbergr)
+library(tidyverse)
+library(wordcloud)
+```
+
+
+The words we would like to investigate are first extracted from Project Gutengurg which is a free e-books project.
+```{r}
+children_novels <- gutenberg_download(c(11, 35997, 46, 34339, 33673), meta_fields = "title") %>% select(text, title)
+```
+
+
+We now have all the books downloaded with text and book titles. Now we need to 
+manipulate this data so each word is it's own row. We will now turn it into a 
+tidy text dataset
+```{r}
+tidy_novels <- children_novels %>%
+  unnest_tokens(word, text)
+```
+
+
+Each word is it's own row now so now we can count the words and group them by their book title.
+```{r}
+word_count <- count(tidy_novels, title, word, sort = TRUE)
+```
+
+
+When we look at the count we see an extremely of rudimentary words that don't
+have significant meaning in the context of these classic children novels. Words 
+such as "the", "and", "to", "of", etc.
+Therefor, we use the tf_idf statistic to weight the words in our collection of
+children books so we can see beyond the rudimentary words.
+```{r}
+weighted_words <- word_count %>%
+  bind_tf_idf(word, title, n) %>%
+  arrange(desc(tf_idf))
+```
+
+Our words are now weighted according to their importance in our children book's
+collection. As you can see words such as "Scrooge", "jungle", "thirst", and
+others have become important. Let's plot these new findings to get a better
+understanding. 
+
+
+Before we plot it we need to change the words and titles into factors because
+we will re-order the words and this way we will also keep the order of our
+graphs in accordance with the book titles. We also had to use unique when
+factoring the words because there are duplicates.
+```{r}
+plot_prep <- weighted_words %>%
+  mutate(word = factor(word, levels = unique(word))) %>%
+  mutate(title = factor(title, levels = c("Alice's Adventures in Wonderland", "The Jungle Book","A Christmas Carol in Prose; Being a Ghost Story of Christmas", "The Princess and the Goblin", "The King of the Golden River; or, the Black Brothers: A Legend of Stiria.")))
+```
+
+
+Now we can plot.
+```{r}
+plot_prep %>%
+  group_by(title) %>%
+  top_n(10, tf_idf) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(word, tf_idf, fill = title)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~title, ncol =2, scales = "free") +
+  coord_flip()
+```
+
+
+However, the word "she" seems to still be there even though it is somewhat
+redundant. Let's go ahead and remove it.
+```{r}
+remove_words <- data_frame(word = "she")  # you would make a vector with c("remove_word1", "remove_word2")
+
+tidy_novels_removed_word <- anti_join(tidy_novels, remove_words, by = "word")
+```
+
+
+Lets re-plot and see how it looks
+```{r}
+tidy_novels_removed_word %>%
+  count(title, word, sort = TRUE) %>%
+  bind_tf_idf(word, title, n) %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = unique(word))) %>%
+  mutate(title = factor(title, levels = c("Alice's Adventures in Wonderland", "The Jungle Book","A Christmas Carol in Prose; Being a Ghost Story of Christmas", "The Princess and the Goblin", "The King of the Golden River; or, the Black Brothers: A Legend of Stiria.")))%>%
+  group_by(title) %>%
+  top_n(10, tf_idf) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(word, tf_idf, fill = title)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~title, ncol =2, scales = "free") +
+  coord_flip()
+```
+
+
+In conclusion, we can see the most important words by analyzing words and their
+frequencies in a particular childrens book in a collection of children books.
+As it is evident, the rudimentary words
+such as "the", "and", "to", etc. no longer have significance of importance. 
+This is one aspect of how we can inspect text data for NLP.
+
+#######################################################################
+Just for fun, let's have fun with visuals and make a wordcloud of the MOST redundant words we found in the all of the childrens books. Do these words look
+familiar regardless of what document they come from?
+```{r}
+weighted_words %>%
+  with(wordcloud(word, n, colors="dark green",max.words = 150))
+```
+
