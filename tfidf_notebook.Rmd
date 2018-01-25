@@ -136,7 +136,8 @@ plot_prep %>%
 ```
 
 
-However, the word "she" seems to still be there even though it is somewhat
+However, the word "she", in The Princess and the Goblin and Alice's Adventures in
+Wonderland graphs, seems to still be there even though it is somewhat
 redundant. Let's go ahead and remove it.
 ```{r}
 remove_words <- data_frame(word = "she")  # you would make a vector with c("remove_word1", "remove_word2")
