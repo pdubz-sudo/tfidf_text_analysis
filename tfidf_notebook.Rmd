@@ -79,7 +79,7 @@ word_count <- count(tidy_novels, title, word, sort = TRUE)
 ```
 
 
-When we look at the count we see an extremely of rudimentary words that don't
+When we look at the count we see many redundant words that don't
 have significant meaning in the context of these classic children novels. Words
 such as "the", "and", "to", "of", "and", "a", "it", etc. Additionally, it is
 evident that doing a word frequency count is not an effective way of
@@ -97,7 +97,7 @@ word_count %>%
 This is why we need to use a different statistical approach to figure out which
 words are actually important in the context of our documents. We use the tf_idf
 statistic to weight the words in our collection of
-children books so we can see beyond the rudimentary words.
+children books so we can see beyond the redundant words.
 ```{r}
 weighted_words <- word_count %>%
   bind_tf_idf(word, title, n) %>%
@@ -168,7 +168,7 @@ tidy_novels_removed_word %>%
 
 We can see the most important words by analyzing words and their
 frequencies in a particular childrens book in a collection of children books.
-As it is evident, the rudimentary words
+As it is evident, the redundant words
 such as "the", "and", "to", etc. no longer have significance of importance.
 If looking at the book A Christmas Carol in Prose we see that workds like
 "ghost", "crachit", and "spirit" are significantly important words. 
