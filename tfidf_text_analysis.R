@@ -41,8 +41,8 @@ word_count <- count(tidy_novels, title, word, sort = TRUE)
 word_count %>%
   with(wordcloud(word, n, colors="dark green",max.words = 150))
 
-# running tf_idf statistics to determine significant words for each childrens
-# book in the collection of childrens books
+# running tf_idf statistics to create weights for words and find important words
+# for each children's book in the collection of children's books
 weighted_words <- word_count %>%
   bind_tf_idf(word, title, n) %>%
   arrange(desc(tf_idf))
@@ -68,7 +68,7 @@ plot_prep %>%
   facet_wrap(~title, ncol =2, scales = "free") +
   coord_flip()
 
-# remove repeating words in top 10 that does not have too much significance
+# remove any other words in top 10 that do not have too much significance
 remove_words <- data_frame(word = "she")  # you would make a vector with c("remove_word1", "remove_word2")
 tidy_novels_removed_word <- anti_join(tidy_novels, remove_words, by = "word")
 
