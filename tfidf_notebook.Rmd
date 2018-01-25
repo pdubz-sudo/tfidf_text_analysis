@@ -21,13 +21,13 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 
 
 This assignment is about analyzing words and their frequencies in text documents
-for NLP (natural language processing). The numerical statistic frequency-inverse
-document frequency,tf-idf, is used to determine how important a word
+for NLP (natural language processing). The numerical statistic term frequency-inverse
+document frequency, tf-idf, is used to determine how important a word
 is in a collection of documents. This decreases weights of words that are 
 often used in a collection and increases the weights of words less often used in
 that collection of documents.
 
-The collection of documents chosen for this script was classic children's books
+The collection of documents chosen for this script were classic children's books
 written in the 19th century by English authors.
 
 Books and Authors:
@@ -86,7 +86,7 @@ evident that doing a word frequency count is not an effective way of
 analyzing and determining meaningful words in documents.
 
 Here's what the top 150 MOST frequent words look like in a word cloud. 
-Do these words redundant words look familiar regardless of what document they
+Do these redundant words look familiar regardless of what document they
 come from?
 ```{r}
 word_count %>%
@@ -97,7 +97,7 @@ word_count %>%
 This is why we need to use a different statistical approach to figure out which
 words are actually important in the context of our documents. We use the tf_idf
 statistic to weight the words in our collection of
-children books so we can see beyond the redundant words.
+children books so we can evaluate meaningful words.
 ```{r}
 weighted_words <- word_count %>%
   bind_tf_idf(word, title, n) %>%
@@ -166,9 +166,9 @@ tidy_novels_removed_word %>%
 ```
 
 
-We can see the most important words by analyzing words and their
-frequencies in a particular childrens book in a collection of children books.
-As it is evident, the redundant words
+We can see the most important words by analyzing words using
+tf-idf and evaluating meaningful words in a particular children's book in 
+a collection of children books. It is evident that the redundant words
 such as "the", "and", "to", etc. no longer have significance of importance.
 If looking at the book A Christmas Carol in Prose we see that workds like
 "ghost", "crachit", and "spirit" are significantly important words. 
